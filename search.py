@@ -18,6 +18,7 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+import copy
 
 class SearchProblem:
     """
@@ -89,7 +90,6 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    import copy
     open_ds = util.Stack()
     dir_ds = util.Stack()
 
@@ -119,7 +119,34 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    open_ds = util.Queue()
+    dir_ds = util.Queue()
+
+    start_state = problem.getStartState()
+    open_ds.push([start_state])
+    dir_ds.push([])
+
+    visited_state = [start_state]
+
+    while not open_ds.isEmpty():
+        node = open_ds.pop()
+        dir_node = dir_ds.pop()
+        end_state = node[-1]
+
+        if problem.isGoalState(end_state):
+            return dir_node
+
+        successors = problem.getSuccessors(end_state)
+        for succ in successors:
+            if succ[0] not in visited_state:
+                visited_state.append(succ[0])
+                new_node = copy.deepcopy(node)
+                new_node.append(succ[0])
+                open_ds.push(new_node)
+                new_dir = dir_node + [succ[1]]
+                dir_ds.push(new_dir)
+    
+    return False
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
