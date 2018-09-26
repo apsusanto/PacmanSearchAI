@@ -74,23 +74,6 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-def pathToDirections(path):
-    directions = []
-    movements = path[1:]
-
-    from game import Directions
-    for state in movements:
-        if state[1] == 'South':
-            directions.append(Directions.SOUTH)
-        if state[1] == 'West':
-            directions.append(Directions.WEST)
-        if state[1] == 'North':
-            directions.append(Directions.NORTH)
-        if state[1] == 'East':
-            directions.append(Directions.EAST)
-    
-    return directions
-
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -106,32 +89,30 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
+    import copy
     open_stack = util.Stack()
-    parent_state = {}
+    dir_stack = util.Stack()
 
     start_state = problem.getStartState()
-    parent_state[start_state[0]] = {start_state[1]: None}
-    start = [(start_state, '', 0)]
+    open_stack.push([start_state])
+    dir_stack.push([])
 
-    open_stack.push(start)
     while not open_stack.isEmpty():
         node = open_stack.pop()
+        dir_node = dir_stack.pop()
         end_state = node[-1]
 
-        if problem.isGoalState(end_state[0]):
-            return pathToDirections(node)
+        if problem.isGoalState(end_state):
+            return dir_node
 
-        successors = problem.getSuccessors(end_state[0])
+        successors = problem.getSuccessors(end_state)
         for succ in successors:
-            if succ[0] not in parent_state or succ[1] not in parent_state[succ[0]]:
-                if succ[0] not in parent_state:
-                    parent_state[succ[0]] = {succ[1]: end_state}
-                else:
-                    parent_state[succ[0]][succ[1]] = end_state
-                import copy
+            if succ[0] not in node:
                 new_node = copy.deepcopy(node)
-                new_node.append(succ)
+                new_node.append(succ[0])
                 open_stack.push(new_node)
+                new_dir = dir_node + [succ[1]]
+                dir_stack.push(new_dir)
     
     return False
 
