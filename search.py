@@ -90,16 +90,16 @@ def depthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
     import copy
-    open_stack = util.Stack()
-    dir_stack = util.Stack()
+    open_ds = util.Stack()
+    dir_ds = util.Stack()
 
     start_state = problem.getStartState()
-    open_stack.push([start_state])
-    dir_stack.push([])
+    open_ds.push([start_state])
+    dir_ds.push([])
 
-    while not open_stack.isEmpty():
-        node = open_stack.pop()
-        dir_node = dir_stack.pop()
+    while not open_ds.isEmpty():
+        node = open_ds.pop()
+        dir_node = dir_ds.pop()
         end_state = node[-1]
 
         if problem.isGoalState(end_state):
@@ -110,9 +110,9 @@ def depthFirstSearch(problem):
             if succ[0] not in node:
                 new_node = copy.deepcopy(node)
                 new_node.append(succ[0])
-                open_stack.push(new_node)
+                open_ds.push(new_node)
                 new_dir = dir_node + [succ[1]]
-                dir_stack.push(new_dir)
+                dir_ds.push(new_dir)
     
     return False
 
