@@ -295,7 +295,7 @@ class CornersProblem(search.SearchProblem):
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        return (self.startingPosition, [])
+        return (self.startingPosition, ())
 
     def isGoalState(self, state):
         """
@@ -329,12 +329,12 @@ class CornersProblem(search.SearchProblem):
 
             if not hitsWall:
                 succ_pos = (nextx, nexty)
-                succ_corner = copy.deepcopy(state[1])
+                succ_corner = list(state[1])
 
                 if succ_pos in self.corners and succ_pos not in state[1]:
                     succ_corner.append(succ_pos)
 
-                successors.append(((succ_pos, succ_corner), action, 1))
+                successors.append(((succ_pos, tuple(succ_corner)), action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -352,7 +352,7 @@ class CornersProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
-
+import math
 def cornersHeuristic(state, problem):
     """
     A heuristic for the CornersProblem that you defined.
@@ -369,8 +369,27 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    heuristic = 0
+    prev_pos = state[0]
+
+    unvisited_corners = list(set(corners) - set(state[1]))
+
+    while unvisited_corners:
+        closest_corner = unvisited_corners[0]
+        closest_corner_distance = util.manhattanDistance(prev_pos, closest_corner)
+
+        for corner in unvisited_corners[1:]:
+            distance = util.manhattanDistance(prev_pos, corner)
+
+            if distance < closest_corner_distance:
+                closest_corner_distance = distance
+                closest_corner = corner
+        
+        heuristic += closest_corner_distance
+        unvisited_corners.remove(closest_corner)
+        prev_pos = closest_corner
+
+    return heuristic
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"

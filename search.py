@@ -197,6 +197,7 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    # TODO: Implement tie breaking
     open_ds = util.PriorityQueue()
     dir_ds = util.PriorityQueue()
     cost_ds = util.PriorityQueue()
