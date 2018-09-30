@@ -352,7 +352,6 @@ class CornersProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
-import math
 def cornersHeuristic(state, problem):
     """
     A heuristic for the CornersProblem that you defined.
@@ -480,7 +479,13 @@ def foodHeuristic(state, problem):
 
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
+    
+    foods = foodGrid.asList()
+
+    distances = [util.manhattanDistance(position, food) for food in foods]
+
+    if distances:
+        return max(distances)
     return 0
 
 class ClosestDotSearchAgent(SearchAgent):
