@@ -480,13 +480,58 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     
-    foods = foodGrid.asList()
+    unvisited_foods = foodGrid.asList()
 
-    distances = [util.manhattanDistance(position, food) for food in foods]
+    if not unvisited_foods:
+        return 0
 
-    if distances:
-        return max(distances)
-    return 0
+    try:
+        food_adj = problem.heuristicInfo['food_adj']
+    except KeyError:
+        food_adj = {}
+
+        for food_s in foodGrid.asList():
+            pq = util.PriorityQueue()
+
+            for food_t in foodGrid.asList():
+                if food_s != food_t:
+                    pq.push(food_t, util.manhattanDistance(food_s, food_t))
+
+            food_adj[food_s] = pq
+
+    mst_length = {}
+
+    for food_s in unvisited_foods:
+        sp = [food_s]
+        spl = util.manhattanDistance(position, food_s)
+
+        unvisited_food_path = copy.deepcopy(unvisited_foods)
+        unvisited_food_path.remove(food_s)
+        next_food = food_s
+
+        while unvisited_food_path:
+            food_pq = copy.deepcopy(food_adj[next_food])
+
+            i = 0
+            next_food = food_pq.pop()
+
+            while next_food not in unvisited_foods or next_food in sp:
+                next_food = food_pq.pop()
+
+            sp.append(next_food)
+            unvisited_food_path.remove(next_food)
+
+        for i in range(len(sp) - 1):
+            spl += util.manhattanDistance(sp[i], sp[i + 1])
+
+        mst_length[food_s] = spl
+
+    min_mst_length = float("inf")
+
+    for _, length in mst_length.iteritems():
+        min_mst_length = min(min_mst_length, length)
+
+    return min_mst_length
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
