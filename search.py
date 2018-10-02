@@ -160,10 +160,11 @@ def uniformCostSearch(problem):
 
             successors = problem.getSuccessors(end[0])
             for succ in successors:
-                if succ[0] not in visited_state or end[2] + succ[2] < visited_state[succ[0]]:
+                if succ[0] not in visited_state or (end[2] + succ[2]) < visited_state[succ[0]]:
                     visited_state[succ[0]] = end[2] + succ[2]
                     new_node = copy.deepcopy(node)
-                    new_node.append(succ)
+                    new_succ = (succ[0], succ[1], end[2] + succ[2])
+                    new_node.append(new_succ)
                     open_ds.push(new_node, end[2] + succ[2])
 
     return []
@@ -185,7 +186,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     start = (start_state, "", (0, heuristic(start_state, problem)))
     open_ds.push([start], start[2])
 
-    visited_state = {start_state[0]: start[2]}
+    visited_state = {start_state[0]: sum(start[2])}
 
     while not open_ds.isEmpty():
         node = open_ds.pop()
@@ -209,7 +210,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                     open_ds.push(n, sum(n[-1][2]))
 
         end = node[-1]
-
         if end[0] not in visited_state or sum(end[2]) <= visited_state[end[0]]:
             if problem.isGoalState(end[0]):
                 return [state[1] for state in node[1:]]
