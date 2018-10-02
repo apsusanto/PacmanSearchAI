@@ -479,9 +479,21 @@ def foodHeuristic(state, problem):
 
     """
     position, foodGrid = state
-    
     unvisited_foods = foodGrid.asList()
+    """
+    Max Food Distance Heuristic
+    Result: 9551 nodes expanded
+    Result: 61 nodes expanded
+    """
+    # distances = [util.manhattanDistance(position, food) for food in unvisited_foods]
 
+    # return max(distances) if distances else 0
+
+    """
+    MST Brute-force
+    Result: 6700 nodes expanded
+    Result: 118 nodes expanded
+    """
     if not unvisited_foods:
         return 0
 
@@ -532,6 +544,52 @@ def foodHeuristic(state, problem):
         min_mst_length = min(min_mst_length, length)
 
     return min_mst_length
+
+    """
+    Max + Average others
+    Result: 13803 nodes expanded
+    Result: 120 nodes expanded
+    """
+    # distances = [util.manhattanDistance(food, position) for food in unvisited_foods]
+
+    # if not distances:
+    #     return 0
+
+    # farthest = max(distances)
+    # distances.remove(farthest)
+
+    # return farthest + ((sum(distances) / len(distances)) if distances else 0)
+
+    """
+    Unfinished Kruskal MST for one-tree lower bound TSP
+    """
+    # if not unvisited_foods:
+    #     return 0
+
+    # try:
+    #     food_graph = problem.heuristicInfo['food_graph']
+    # except KeyError:
+    #     food_graph = []
+    #     foods = foodGrid.asList()
+
+    #     for i in range(len(foods)):
+    #         for j in range(i + 1, len(foods)):
+    #             food_graph.append([foods[i], foods[j], util.manhattanDistance(food[i], food[j])])
+        
+    #     food_graph = sorted(food_graph, key=lambda item: item[2])
+
+    #     parent = []
+    #     rank = []
+
+    #     for i in range(len(foods)):
+    #         parent.append(food)
+    #         rank.append(0)
+
+    #     i = 0
+    #     e = 0
+
+    #     while e < len(foods)
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"

@@ -91,98 +91,80 @@ def depthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
     open_ds = util.Stack()
-    dir_ds = util.Stack()
 
-    start_state = problem.getStartState()
-    open_ds.push([start_state])
-    dir_ds.push([])
+    start = [problem.getStartState(), ""]
+    open_ds.push([start])
 
     while not open_ds.isEmpty():
         node = open_ds.pop()
-        dir_node = dir_ds.pop()
-        end_state = node[-1]
+        path = [state[0] for state in node]
+        end = node[-1]
 
-        if problem.isGoalState(end_state):
-            return dir_node
+        if problem.isGoalState(end[0]):
+            return [state[1] for state in node[1:]]
 
-        successors = problem.getSuccessors(end_state)
+        successors = problem.getSuccessors(end[0])
         for succ in successors:
-            if succ[0] not in node:
+            if succ[0] not in path:
                 new_node = copy.deepcopy(node)
-                new_node.append(succ[0])
+                new_node.append(succ)
                 open_ds.push(new_node)
-                new_dir = dir_node + [succ[1]]
-                dir_ds.push(new_dir)
     
-    return False
+    return []
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
     open_ds = util.Queue()
-    dir_ds = util.Queue()
 
-    start_state = problem.getStartState()
-    open_ds.push([start_state])
-    dir_ds.push([])
+    start = [problem.getStartState(), ""]
+    open_ds.push([start])
 
-    visited_state = [start_state]
+    visited_state = [start[0]]
 
     while not open_ds.isEmpty():
         node = open_ds.pop()
-        dir_node = dir_ds.pop()
-        end_state = node[-1]
+        end = node[-1]
 
-        if problem.isGoalState(end_state):
-            return dir_node
+        if problem.isGoalState(end[0]):
+            return [state[1] for state in node[1:]]
 
-        successors = problem.getSuccessors(end_state)
+        successors = problem.getSuccessors(end[0])
         for succ in successors:
             if succ[0] not in visited_state:
                 visited_state.append(succ[0])
                 new_node = copy.deepcopy(node)
-                new_node.append(succ[0])
+                new_node.append(succ)
                 open_ds.push(new_node)
-                new_dir = dir_node + [succ[1]]
-                dir_ds.push(new_dir)
-    
-    return False
+
+    return []
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
     open_ds = util.PriorityQueue()
-    dir_ds = util.PriorityQueue()
-    cost_ds = util.PriorityQueue()
 
     start_state = problem.getStartState()
-    open_ds.push([start_state], 0)
-    dir_ds.push([], 0)
-    cost_ds.push(0, 0)
+    start = (start_state, "", 0)
+    open_ds.push([start], 0)
 
     visited_state = {start_state: 0}
 
     while not open_ds.isEmpty():
         node = open_ds.pop()
-        dir_node = dir_ds.pop()
-        cost = cost_ds.pop()
+        end = node[-1]
 
-        end_state = node[-1]
+        if end[0] not in visited_state or end[2] <= visited_state[end[0]]:
+            if problem.isGoalState(end[0]):
+                return [state[1] for state in node[1:]]
 
-        if end_state not in visited_state or cost <= visited_state[end_state]:
-            if problem.isGoalState(end_state):
-                return dir_node
-
-            successors = problem.getSuccessors(end_state)
+            successors = problem.getSuccessors(end[0])
             for succ in successors:
-                if succ[0] not in visited_state or cost + succ[2] < visited_state[succ[0]]:
-                    visited_state[succ[0]] = cost + succ[2]
+                if succ[0] not in visited_state or end[2] + succ[2] < visited_state[succ[0]]:
+                    visited_state[succ[0]] = end[2] + succ[2]
                     new_node = copy.deepcopy(node)
-                    new_node.append(succ[0])
-                    open_ds.push(new_node, cost + succ[2])
-                    new_dir = dir_node + [succ[1]]
-                    dir_ds.push(new_dir, cost + succ[2])
-                    cost_ds.push(cost + succ[2], cost + succ[2])
+                    new_node.append(succ)
+                    open_ds.push(new_node, end[2] + succ[2])
 
     return []
 
@@ -197,42 +179,53 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    # TODO: Implement tie breaking
     open_ds = util.PriorityQueue()
-    dir_ds = util.PriorityQueue()
-    cost_ds = util.PriorityQueue()
 
     start_state = problem.getStartState()
-    open_ds.push([start_state], 0)
-    dir_ds.push([], 0)
-    cost_ds.push(0, 0)
+    start = (start_state, "", (0, heuristic(start_state, problem)))
+    open_ds.push([start], start[2])
 
-    visited_state = {start_state: 0}
+    visited_state = {start_state[0]: start[2]}
 
     while not open_ds.isEmpty():
         node = open_ds.pop()
-        dir_node = dir_ds.pop()
-        cost = cost_ds.pop()
 
-        end_state = node[-1]
+        if not open_ds.isEmpty():
+            next_node = open_ds.pop()
+            temp = [node, next_node]
 
-        if end_state not in visited_state or cost <= visited_state[end_state]:
-            if problem.isGoalState(end_state):
-                return dir_node
+            while not open_ds.isEmpty() and sum(node[-1][2]) == sum(next_node[-1][2]):
+                next_node = open_ds.pop()
+                temp.append(next_node)
+            
+            tie_nodes = temp if sum(node[-1][2]) == sum(next_node[-1][2]) else temp[:-1]
 
-            successors = problem.getSuccessors(end_state)
+            for n in tie_nodes:
+                if node[-1][2][0] < n[-1][2][0]:
+                    node = n
+
+            for n in temp:
+                if node != n:
+                    open_ds.push(n, sum(n[-1][2]))
+
+        end = node[-1]
+
+        if end[0] not in visited_state or sum(end[2]) <= visited_state[end[0]]:
+            if problem.isGoalState(end[0]):
+                return [state[1] for state in node[1:]]
+
+            successors = problem.getSuccessors(end[0])
             for succ in successors:
-                if succ[0] not in visited_state or cost + succ[2] + heuristic(succ[0], problem) < visited_state[succ[0]]:
-                    visited_state[succ[0]] = cost + succ[2] + heuristic(succ[0], problem)
+                gn_succ = end[2][0] + succ[2]
+                hn_succ = heuristic(succ[0], problem)
+                fn_succ = gn_succ + hn_succ
+                if succ[0] not in visited_state or fn_succ < visited_state[succ[0]]:
+                    visited_state[succ[0]] = fn_succ
                     new_node = copy.deepcopy(node)
-                    new_node.append(succ[0])
-                    open_ds.push(new_node, cost + succ[2] + heuristic(succ[0], problem))
-                    new_dir = dir_node + [succ[1]]
-                    dir_ds.push(new_dir, cost + succ[2] + heuristic(succ[0], problem))
-                    cost_ds.push(cost + succ[2], cost + succ[2] + heuristic(succ[0], problem))
-
+                    new_succ = (succ[0], succ[1], (gn_succ, hn_succ))
+                    new_node.append(new_succ)
+                    open_ds.push(new_node, fn_succ)
     return []
-
 
 # Abbreviations
 bfs = breadthFirstSearch
