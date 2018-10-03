@@ -478,59 +478,62 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
 
     """
+    def find(parent, i):
+        if parent[i] == None:
+            return i
+        return find(parent, parent[i])
+
+    def union(parent, rank, x, y):
+        xroot = find(parent, x) 
+        yroot = find(parent, y) 
+
+        if rank[xroot] < rank[yroot]: 
+            parent[xroot] = yroot
+        elif rank[xroot] > rank[yroot]:
+            parent[yroot] = xroot
+        else :
+            parent[yroot] = xroot
+            rank[xroot] += 1
+
     position, foodGrid = state
     unvisited_foods = foodGrid.asList()
 
     if not unvisited_foods:
         return 0
 
-    try:
-        food_adj = problem.heuristicInfo['food_adj']
-    except KeyError:
-        food_adj = {}
+    graph = []
+    for i in range(len(unvisited_foods)):
+        for j in range(1, len(unvisited_foods)):
+            graph.append([unvisited_foods[i], unvisited_foods[j], util.manhattanDistance(unvisited_foods[i], unvisited_foods[j])])
 
-        for food_s in foodGrid.asList():
-            pq = util.PriorityQueue()
+    mst_length = 0
+    i = 0
+    e = 0
 
-            for food_t in foodGrid.asList():
-                if food_s != food_t:
-                    pq.push(food_t, util.manhattanDistance(food_s, food_t))
+    graph = sorted(graph, key=lambda x:x[2])
 
-            food_adj[food_s] = pq
+    parent = {}
+    rank = {}
 
-    mst_length = {}
+    for food in unvisited_foods:
+        parent[food] = None
+        rank[food] = 0
 
-    for food_s in unvisited_foods:
-        sp = [food_s]
-        spl = util.manhattanDistance(position, food_s)
+    while e < len(unvisited_foods) - 1:
+        u, v, w = graph[i]
+        i += 1
+        x = find(parent, u)
+        y = find(parent, v)
 
-        unvisited_food_path = copy.deepcopy(unvisited_foods)
-        unvisited_food_path.remove(food_s)
-        next_food = food_s
+        if x != y:
+            e += 1
+            mst_length += w
+            union(parent, rank, x, y)
 
-        while unvisited_food_path:
-            food_pq = copy.deepcopy(food_adj[next_food])
+    closest_food = min([util.manhattanDistance(position, food) for food in unvisited_foods])
 
-            i = 0
-            next_food = food_pq.pop()
+    return closest_food + mst_length
 
-            while next_food not in unvisited_foods or next_food in sp:
-                next_food = food_pq.pop()
-
-            sp.append(next_food)
-            unvisited_food_path.remove(next_food)
-
-        for i in range(len(sp) - 1):
-            spl += util.manhattanDistance(sp[i], sp[i + 1])
-
-        mst_length[food_s] = spl
-
-    min_mst_length = float("inf")
-
-    for _, length in mst_length.iteritems():
-        min_mst_length = min(min_mst_length, length)
-
-    return min_mst_length
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
