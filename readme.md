@@ -53,4 +53,7 @@ A non-trivial, non-negative, and admissible heuristic which can be used to for P
 Here, the minimum spanning tree of all foods are formulated through Kruskal's MST algorithm, and using the sum of values of the edges in the minimum spanning tree, added with the distance between Pacman and the closest food, a rough underestimation can be obtained.
 
 ## Suboptimal (Greedy) Search
+```
+python pacman.py -l bigSearch -p ClosestDotSearchAgent -z .5 
+```
 A* with a good heuristic might take very long to compute, so that option might not be viable, especially for a huge and complicated maze. Therefore, a greedy solution which may return a suboptimal result but can reasonably find a good path is also implemented.
